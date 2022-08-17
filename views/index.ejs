@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sensor Data</title>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">Sensor Data Monitoring</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup"
+                aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav">
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container my-4">
+        <h3>Live Data</h3>
+        <table class="table">
+            <thead>
+                <th>SNo.</th>
+                <th>Sensor Name</th>
+                <th>Value</th>
+                <th>Timestamp</th>
+            </thead>
+            <tbody id="tableLive">
+                <tr>
+                    <td>1.</td>
+                    <td id="sensorNameLive">-</td>
+                    <td id="sensorValueLive">-</td>
+                    <td id="sensorTimeLive">-</td>
+                </tr>
+            </tbody>
+        </table>
+        <h3>Past Values</h3>
+        <table class="table">
+            <thead>
+                <th>SNo.</th>
+                <th>Sensor Name</th>
+                <th>Value</th>
+                <th>Timestamp</th>
+            </thead>
+            <tbody id="dataTable">
+
+            </tbody>
+        </table>
+    </div>
+
+    <footer style="position: fixed; width: 100%; bottom: 0; left: 0; padding: 0px; text-align: center; background-color: #0275d8; margin: 0;">
+        <p style="color: white;">Made By - Aryan Garg</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-A3rJD856KowSb7dwlZdYEkO39Gagi7vIsF0jrRAoQmDKKtQBHUuLZ9AsSv4jD4Xa"
+        crossorigin="anonymous"></script>
+    <script>
+
+        function createRow(rowData, i) {
+            var row = document.createElement("tr");
+
+            var serialNo = document.createElement("td");
+            var sensorName = document.createElement("td");
+            var sensorValue = document.createElement("td");
+            var sensorTime = document.createElement("td");
+
+            serialNo.innerText = `${i + 1}.`;
+            sensorName.innerText = rowData.name;
+            sensorValue.innerText = rowData.data;
+            sensorTime.innerText = new Date(rowData.time).toLocaleTimeString() + " " + new Date(rowData.time).toDateString();
+
+            row.append(serialNo);
+            row.append(sensorName);
+            row.append(sensorValue);
+            row.append(sensorTime);
+
+            return row;
+        }
+
+        async function getAllData() {
+            const settings = {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                },
+            };
+
+            // Calling the API to get all the data
+            const response = await fetch("/getAllData", settings);
+            allData = await response.json();
+
+            var n = allData.length;
+            var liveData = allData[n - 1];
+
+            // Filling the current value of the sensor
+            document.getElementById("sensorNameLive").innerText = liveData.name;
+            document.getElementById("sensorValueLive").innerText = liveData.data;
+            document.getElementById("sensorTimeLive").innerText = new Date(liveData.time).toLocaleTimeString() + " " + new Date(liveData.time).toDateString();
+
+            // Filling the past data in the table
+            var dataTable = document.getElementById("dataTable");
+            dataTable.innerHTML = "";
+            for (var i = n - 2; i >= 0; i--) {
+                dataTable.append(createRow(allData[i], n - i - 2));
+            }
+        }
+        getAllData();
+
+        // Refresh the page with new data in every 5 seconds
+        setInterval(getAllData, 5000);
+    </script>
+
+</body>
+
+</html>
